@@ -1,0 +1,23 @@
+# 카프카 토픽 생성
+/opt/bitnami/kafka/bin/kafka-topics.sh \
+--create \
+--topic stock-increase-topic \
+--bootstrap-server localhost:9092 \
+--partitions 1 \
+--replication-factor 1
+
+## 시나리오: 4번 주문 상태 변경 과정에서 에러 발생 후 보상 트랜잭션에 의한 롤백 처리
+    POST http://localhost:8080/orders/saga-fail-test
+        {"productName": "장애를 허용하는 견고한 시스템 만들기", "quantity": 1}
+
+-> 재고 감소부터 보상 트랜잭션까지 수행
+ 보상 트랜잭션들
+    -> 외부 결제 취소 API 호출 되어야함
+    -> 재고는 다시 증가되어야함
+    -> 주문은 생성된 후 FAILED 상태로 남아있어야함
+
+## db에서 데이터 확인
+psql -U lecture -d orders_service
+
+SELECT * FROM orders;
+SELECT * FROM outbox_events;

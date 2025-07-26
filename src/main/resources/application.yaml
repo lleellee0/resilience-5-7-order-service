@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/orders_service
+    username: lecture
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create # 애플리케이션 실행 시 스키마를 새로 생성합니다.
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  kafka:
+    bootstrap-servers: localhost:29092,localhost:29093,localhost:29094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # 객체 전송을 위해 JsonSerializer 사용
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: true
+        acks: all
+    consumer:
+      group-id: stock-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # 객체 수신을 위해 JsonDeserializer 사용
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        # Deserialization 할 DTO 패키지를 신뢰하도록 설정
+        spring.json.trusted.packages: "resilience.orderservice.kafka"
+      auto-offset-reset: earliest

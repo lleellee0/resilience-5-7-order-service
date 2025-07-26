@@ -1,0 +1,28 @@
+# DB 스키마 생성
+psql -U lecture -d postgres
+CREATE DATABASE orders_service;
+
+# 카프카 토픽 생성
+/opt/bitnami/kafka/bin/kafka-topics.sh \
+--create \
+--topic stock-decrease-topic \
+--bootstrap-server localhost:9092 \
+--partitions 1 \
+--replication-factor 1
+
+## 시나리오 1: 듀얼 라이트 문제 재현
+    POST http://localhost:8080/orders/problematic
+        {"productName": "장애를 허용하는 견고한 시스템 만들기", "quantity": 1}
+
+-> [Consumer] 재고 감소 이벤트 수신 성공! 로그가 출력됨.
+
+## db에서 데이터 확인
+\c orders_service
+SELECT * FROM orders;
+SELECT * FROM outbox_events;
+
+## 시나리오 2: 트랜잭셔널 아웃박스 패턴으로 해결
+    POST http://localhost:8080/orders/solution
+        {"productName": "개발자에게 필요한 로그 관리", "quantity": 2}
+
+-> [Consumer] 재고 감소 이벤트 수신 성공! 로그가 출력되지 않음.

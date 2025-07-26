@@ -1,0 +1,17 @@
+## 시나리오 1: 버전을 체크하지 않고 재고 감소 처리하기
+    POST http://localhost:8080/orders
+        {"productName": 1, "quantity": 10}
+
+-> 동일 메시지가 여러건 쌓여있을 때 모든 메시지에 의해 재고가 감소된다.
+
+## db에서 데이터 확인
+psql -U lecture -d orders_service
+
+SELECT * FROM orders;
+SELECT * FROM products;
+
+## 시나리오 2: StockEventsConsumer에서 주석처리한 로직을 바꿔 버전 체크하여 재고 감소하기
+    POST http://localhost:8080/orders
+        {"productName": 1, "quantity": 10}
+
+-> 버전에 의해 동일한 주문으로 간주되는 메시지는 더이상 재고를 감소시키지 않는다.
